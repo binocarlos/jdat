@@ -18,48 +18,61 @@ jdat will add methods to an object prototype:
 ```js
 var jdat = require('jdat');
 
-function MyClass(arr){
+var HeroClass = function(arr){
   this.models = arr;
 }
 
+HeroClass.prototype.halfspeed = function(){
+  return this.models[0].speed/2;
+}
+
+
 jdat({
-  // extend the prototype of MyClass with jdat methods
-  extend:MyClass.prototype,
-  // reference the 'models' property of MyClass
+  // the prototype we will extend
+  proto:HeroClass.prototype,
+  // the field of the prototype that contains an array of models
   field:'models',
-  // use '_children' as the children property of each model
-  children:'_children',
-  // the factory function for creating new spawned instances
-  factory:function(data){
-  	return new MyClass(data);
+  // the field of each model that is a child array of models
+  childfield:'children',
+  // a function to return a new instance from an array of models
+  spawn:function(data){
+  	return new HeroClass(data);
   }
 })
 
-var testdata = new MyClass([{
-  name:'test1',
-  _children:[{
-  	name:'child1'
-  }]
+
+var herodata = [{
+  name:'Superman',
+  speed:9,
+  children:[...]
 },{
-  name:'test2'
-}])
+  name:'Spiderman',
+  speed:8,
+  children:[...]
+},{
+  name:'SilverSurfer',
+  speed:11,
+  children:[...]
+}]
 
-var count = 0;
 
-testdata
+var heroes = new HeroClass(herodata);
+
+var speeds = heroes.map(function(hero){
+  return hero.get(0).speed;
+})
+
+var silver = heroes.eq(2);
+
+silver.children().forEach(function(silverchild){
+  // silverchild is a HeroClass with the children as models
+})
+
+heroes
   .descendents()
-  .filter(function(instance){
-    count++;
-    return instance.get(0).name=='child1';
-  })
   .each(function(instance){
     console.log(instance.get(0).name);
   })
-
-console.log(count);
-
-// child1
-// 3
 ```
 
 ## api
@@ -68,23 +81,11 @@ console.log(count);
 
 Assign the jdat methods to a prototype - the options are:
 
- * extend - the prototype to extend with the jdat mixin
- * field - the property of the instance that is the model array
- * children - the property of each model that is the children array
- * factory - a function that will generate a new instance
+ * proto - the prototype we will extend
+ * models - the field of the prototype that contains an array of models
+ * childfield - the field of each model that is a child array of models
+ * spawn - a function to return a new instance from an array of models
 
-#### `instances()`
-
-Return an array of instances each with only one model in their array:
-
-```js
-testdata.instances().forEach(function(instance){
-  console.log(instance.models[0].name);
-})
-
-// test1
-// test2
-```
 
 #### `children()`
 
@@ -95,7 +96,7 @@ testdata.children().forEach(function(instance){
   console.log(instance.models[0].name);
 })
 
-// child1
+// Superman
 ```
 
 #### `descendents()`
@@ -107,9 +108,9 @@ testdata.descendents().forEach(function(instance){
   console.log(instance.models[0].name);
 })
 
-// test1
-// child1
-// test2
+// Superman & children names
+// Spiderman & children names
+// SilverSurfer & children names
 ```
 
 #### `recurse(fn)`
@@ -121,9 +122,9 @@ testdata.recurse(function(instance){
   console.log(instance.models[0].name);
 })
 
-// test1
-// child1
-// test2
+// Superman & children names
+// Spiderman & children names
+// SilverSurfer & children names
 ```
 
 
@@ -136,8 +137,9 @@ testdata.each(function(item){
   console.log(item.models[0].name);
 })
 
-// test1
-// test2
+// Superman
+// Spiderman
+// SilverSurfer
 ```
 
 #### `map(fn)`
@@ -149,24 +151,10 @@ var names = testdata.map(function(item){
   return item.models[0].name.toUpperCase();
 })
 
-// TEST1
-// TEST2
+// SUPERMAN
+// SPIDERMAN
+// SILVERSURFER
 ```
-
-#### `filter(fn)`
-
-Get an array of instances that pass the filter function:
-
-```js
-var filtered = testdata.filter(function(item){
-  return item.models[0].name.match(/2$/);
-})
-
-console.log(filtered[0].models[0].name);
-
-// test2
-```
-
 
 #### `eq(index)`
 
@@ -177,7 +165,7 @@ var secondone = testdata.eq(1);
 
 console.log(secondone.models[0].name);
 
-// test2
+// Spiderman
 ```
 
 #### `first()`
@@ -189,7 +177,7 @@ var first = testdata.first();
 
 console.log(first.models[0].name);
 
-// test1
+// Superman
 ```
 
 #### `last()`
@@ -201,7 +189,7 @@ var first = testdata.last();
 
 console.log(first.models[0].name);
 
-// test2
+// SilverSurfer
 ```
 
 #### `get(index)`
@@ -213,7 +201,7 @@ var secondmodel = testdata.get(1);
 
 console.log(secondmodel.name);
 
-// test2
+// Spiderman
 ```
 
 #### `count()`
@@ -225,7 +213,7 @@ var count = testdata.count();
 
 console.log(count);
 
-// 2
+// 3
 ```
 
 #### `clone()`
@@ -233,9 +221,7 @@ console.log(count);
 Return an instance that has a copy (JSON.stringify / JSON.parse) of the models:
 
 ```js
-var newone = testdata.spawn([{
-	name:'other'
-}])
+var newone = testdata.clone();
 ```
 
 #### `spawn()`
@@ -244,8 +230,20 @@ Use the factory function to return new instances of the class with different dat
 
 ```js
 var newone = testdata.spawn([{
-	name:'other'
+	name:'otherdata'
 }])
+```
+
+#### `instances()`
+
+Return an array of instances each with only one model in their array:
+
+```js
+var instances = testdata.instances();
+
+console.log(instances.length);
+
+// 3
 ```
 
 ## license
