@@ -1,6 +1,6 @@
 {
   "name": "jdat",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A wrapper for an array of models with a JQuery like syntax",
   "main": "src/index.js",
   "scripts": {
@@ -27,7 +27,5 @@
     "url": "https://github.com/binocarlos/jdat/issues"
   },
   "homepage": "https://github.com/binocarlos/jdat",
-  "dependencies": {
-    
-  }
+  "dependencies": {}
 }
