@@ -224,6 +224,21 @@ describe('jdat', function(){
       des.count().should.equal(9);
 
     })
+
+
+    it('should run a recurse function', function(){
+      var dat = new_jdat();
+
+      var hit = [];
+
+      dat.recurse(function(instance){
+        hit[instance.get(0).name] = 10;
+      })
+
+      Object.keys(hit).length.should.equal(9);
+      hit['Spider Bike'].should.equal(10);
+
+    })
   })
 
 })

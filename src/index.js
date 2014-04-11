@@ -10,7 +10,7 @@ function getPrototype(options){
 			})
 		},
 		spawn:function(models){
-		  return options.spawn(models || []);
+		  return options.spawn.apply(this, [(models || [])]);
 		},
 		children:function(){
 		  var models = [];
@@ -32,6 +32,9 @@ function getPrototype(options){
 		  scoopmodels(this);
 
 		  return this.spawn(ret);
+		},
+		recurse:function(fn){
+			this.descendents().instances().forEach(fn);
 		},
 		each:function(fn){
 			this.instances().forEach(fn);
